@@ -17,7 +17,7 @@
 |---|---|---|
 | Hook | 0–90 | "Inference that keeps up." — words land on 128 BPM beats |
 | Problem | 90–210 | GPU cost counter spiraling, provisioning bar stalling |
-| Product | 210–450 | Browser mockup tilt-in, dashboard reveal, callouts |
+| Product | 210–450 | Browser mockup tilt-in with dashboard, then a dive through the screen into a cascading wall of real model names as a counter rolls to 40,000+ |
 | Code beat | 450–570 | Real quickstart API call, typewriter + streaming response, latency badge → 87ms |
 | Metrics | 570–780 | Cost comparison bars + savings counter |
 | Outro | 780–900 | Logo, tagline, CTA, 20-frame hold |

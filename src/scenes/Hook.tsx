@@ -24,12 +24,6 @@ export const Hook: React.FC = () => {
     easing: Easing.bezier(0.4, 0, 1, 1),
   });
 
-  const brandOpacity = interpolate(frame, [68, 78], [0, 0.85], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.bezier(0.16, 1, 0.3, 1),
-  });
-
   return (
     <AbsoluteFill>
       <Backdrop />
@@ -86,12 +80,12 @@ export const Hook: React.FC = () => {
             fontSize: 34,
             fontWeight: 500,
             color: colors.muted,
-            opacity: interpolate(frame, [4 * FRAMES_PER_BEAT, 4 * FRAMES_PER_BEAT + 12], [0, 1], {
+            opacity: interpolate(frame, [3 * FRAMES_PER_BEAT, 3 * FRAMES_PER_BEAT + 12, 82, 90], [0, 1, 1, 0], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.16, 1, 0.3, 1),
             }),
-            translate: `0px ${interpolate(frame, [4 * FRAMES_PER_BEAT, 4 * FRAMES_PER_BEAT + 12], [16, 0], {
+            translate: `0px ${interpolate(frame, [3 * FRAMES_PER_BEAT, 3 * FRAMES_PER_BEAT + 12], [16, 0], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.16, 1, 0.3, 1),
@@ -101,39 +95,6 @@ export const Hook: React.FC = () => {
           Open models. One API key. Zero cold starts.
         </Interactive.Div>
       </AbsoluteFill>
-
-      <Interactive.Div
-        name="Brand mark"
-        style={{
-          position: "absolute",
-          top: 64,
-          left: 80,
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          opacity: brandOpacity,
-          translate: `0px ${interpolate(frame, [68, 80], [12, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-          })}px`,
-        }}
-      >
-        <svg width="34" height="34" viewBox="0 0 48 48">
-          <g fill="none" stroke={colors.primary} strokeWidth="4" strokeLinecap="round">
-            <path d="M 8 42 C 8 22, 20 10, 42 6" />
-            <path d="M 8 42 C 15 31, 26 24, 42 20" />
-          </g>
-          <g stroke={colors.primary} strokeWidth="3" strokeLinecap="round" opacity="0.7">
-            <path d="M 20 17 C 27 20, 33 22, 39 23" />
-            <path d="M 24 26 C 31 29, 37 30, 43 31" opacity="0.7" />
-            <path d="M 29 35 C 35 37, 40 38, 45 39" opacity="0.5" />
-          </g>
-        </svg>
-        <span style={{ fontFamily: font.family, fontSize: 24, fontWeight: 600, color: colors.text }}>
-          featherless
-        </span>
-      </Interactive.Div>
     </AbsoluteFill>
   );
 };

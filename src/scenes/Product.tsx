@@ -1,30 +1,64 @@
-// Scene 3 — Product (240 frames): browser mockup tilts in, reveals dashboard,
-// un-tilts toward fullscreen, three callouts pop in sequence.
+// Scene 3 — Product (240 frames): browser mockup tilts in with the dashboard,
+// then we dive THROUGH it into a cascading wall of real model names while a
+// counter rolls to 40,000+.
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
 
-const CALLOUTS = [
-  { text: "40,000+ models, one key", at: 96, top: "18%", left: "8%" },
-  { text: "Zero cold starts", at: 128, top: "46%", left: "70%" },
-  { text: "Flat-rate pricing", at: 160, top: "72%", left: "14%" },
+// One hero callout on the settled mockup — sets up the wall.
+const HERO_CALLOUT = { text: "40,000+ models, one key", at: 64 };
+
+const DIVE_FROM = 112; // mockup flies toward / past the camera
+const WALL_FROM = 128; // first chips land
+const COUNTER_FROM = 138;
+const COUNTER_TO = 198; // 40,000+ locks in
+const SUBSTATS_AT = 204;
+
+// Real model names from the Featherless catalog (short display forms).
+const MODEL_NAMES = [
+  "GLM-5.3", "DeepSeek-V4-Pro", "Kimi-K3", "Qwen3.6-27B", "gpt-oss-120b",
+  "DeepSeek-V3.2", "gemma-4-26B", "Llama-3.1-8B", "Mistral-Small-3.2", "gpt-oss-20b",
+  "Qwen3.5-9B", "Ling-1T", "DeepSeek-R1-0528", "Hermes-4-14B", "Qwen3-Next-80B",
+  "Qwen3-VL-8B", "Qwen2.5-7B", "RWKV-7-World", "Qwen2.5-Math-7B", "Qwen3-Coder-30B",
+  "Kimi-K2.6", "MiniMax-M3", "GLM-5.2", "DeepSeek-R1", "Qwen3.8-27B",
+  "GLM-5.3-Flash", "Qwen3-32B", "Qwen2.5-0.6B", "Hermes-4-70B", "Qwen3.5-27B",
+  "Qwen2.5-Math-72B", "Nanbeige4.1-3B", "DeepScaleR-1.5B", "Qwen3.8-Flash-Next", "Llama-3.1-70B",
+  "Ministral-8B",
 ];
 
-// Secondary micro-callouts during the fullscreen hold (195-228) so the
-// reveal never sits perfectly still.
-const MICRO_CALLOUTS = [
-  { text: "API key: fl_sk_live…", at: 196, top: "24%", left: "72%" },
-  { text: "v2 endpoint", at: 208, top: "62%", left: "9%" },
-];
+// Grid geometry: 7 cols x 6 rows with a 3x2 hole in the middle for the counter.
+const COLS = 7;
+const ROWS = 6;
+const CHIP_W = 240;
+const CHIP_H = 54;
+const PITCH_X = 254;
+const PITCH_Y = 150;
+const ORIGIN_X = 71;
+const ORIGIN_Y = 120;
+const HOLE_COLS = [2, 3, 4];
+const HOLE_ROWS = [2, 3];
+
+// Assign names to non-hole cells in row-major order.
+const CHIPS: { name: string; row: number; col: number; accent: boolean }[] = [];
+{
+  let i = 0;
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (HOLE_ROWS.includes(row) && HOLE_COLS.includes(col)) continue;
+      CHIPS.push({ name: MODEL_NAMES[i] ?? `model-${i}`, row, col, accent: i % 6 === 3 });
+      i++;
+    }
+  }
+}
 
 export const Product: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Phase 1 (0-40): tilt in — spring from small + tilted 12deg to on-screen
+  // Phase 1 (0-40): tilt in — spring from small + tilted to on-screen
   const tiltIn = spring({ frame, fps, config: { damping: 16, mass: 1.1, stiffness: 110 } });
   const width = interpolate(tiltIn, [0, 1], [920, 1560]);
-  const rotateX = interpolate(tiltIn, [0, 1], [14, 2]); // degrees
+  const rotateX = interpolate(tiltIn, [0, 1], [14, 2]);
   const rotateZ = interpolate(tiltIn, [0, 1], [-12, -3.5]);
 
   // Phase 2 (46-76): settle upright
@@ -33,12 +67,46 @@ export const Product: React.FC = () => {
   const rotX = interpolate(upright, [0, 1], [rotateX, 0]);
   const w = interpolate(upright, [0, 1], [width, 1640]);
 
-  // Phase 3 (170-210): push to near-fullscreen (un-tilt to fullscreen reveal)
-  const reveal = spring({ frame: frame - 170, fps, config: { damping: 200, mass: 1 } });
-  const finalW = interpolate(reveal, [0, 1], [w, 1888]);
+  // Phase 3 (112+): dive through the screen toward the wall
+  const dive = spring({ frame: frame - DIVE_FROM, fps, config: { damping: 26, mass: 1 } });
+  const finalW = interpolate(dive, [0, 1], [w, 2800]);
+  const mockupOpacity = interpolate(frame, [126, 148], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.4, 0, 1, 1),
+  });
 
-  const floating = Math.sin(frame / 26) * 8; // continuous float — nothing static
+  const floating = Math.sin(frame / 26) * 8;
   const shadow = 40 + 18 * Math.sin(frame / 26);
+
+  // Hero callout: pops in, then exits as the dive starts.
+  const calloutPop = spring({
+    frame: frame - HERO_CALLOUT.at,
+    fps,
+    config: { damping: 13, mass: 0.8, stiffness: 150 },
+  });
+  const calloutOpacity =
+    interpolate(calloutPop, [0, 0.5], [0, 1], { extrapolateRight: "clamp" }) *
+    interpolate(frame, [112, 120], [1, 0], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(0.4, 0, 1, 1),
+    });
+
+  // Wall: counter value rolls up, locks at 40,000+.
+  const counterValue = Math.round(
+    interpolate(frame, [COUNTER_FROM, COUNTER_TO], [0, 40000], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(0.25, 0.65, 0.2, 1),
+    })
+  );
+  const landed = frame >= COUNTER_TO;
+  const landPop = spring({ frame: frame - COUNTER_TO, fps, config: { damping: 12, mass: 0.9, stiffness: 160 } });
+  const counterBreathe = landed ? 1 + 0.01 * Math.sin(frame / 18) : 1;
+
+  // Whole-wall slow drift so nothing is ever perfectly still.
+  const wallDrift = Math.sin(frame / 38) * 9;
 
   const exitOpacity = interpolate(frame, [228, 240], [1, 0], {
     extrapolateLeft: "clamp",
@@ -62,6 +130,7 @@ export const Product: React.FC = () => {
           perspective: 1600,
         }}
       >
+        {/* Browser mockup with the dashboard — tilts in, settles, then dives */}
         <Interactive.Div
           name="Browser mockup"
           style={{
@@ -74,6 +143,7 @@ export const Product: React.FC = () => {
             overflow: "hidden",
             boxShadow: `0 ${shadow}px 90px rgba(0, 0, 0, 0.55), 0 ${shadow / 3}px ${shadow}px rgba(254, 244, 122, 0.05)`,
             translate: `0px ${floating}px`,
+            opacity: mockupOpacity,
           }}
         >
           {/* Chrome bar */}
@@ -125,69 +195,139 @@ export const Product: React.FC = () => {
           />
         </Interactive.Div>
 
-        {/* Callouts pop in sequence on top of the mockup */}
-        {CALLOUTS.map((c) => {
+        {/* Hero callout on the settled mockup */}
+        <Interactive.Div
+          name="Callout: 40,000+ models"
+          style={{
+            position: "absolute",
+            top: "18%",
+            left: "8%",
+            fontFamily: font.family,
+            fontSize: 27,
+            fontWeight: 600,
+            color: colors.background,
+            backgroundColor: colors.primary,
+            padding: "12px 24px",
+            borderRadius: 12,
+            opacity: calloutOpacity,
+            scale: `${interpolate(calloutPop, [0, 1], [0.6, 1])}`,
+            translate: `0px ${interpolate(calloutPop, [0, 1], [18, 0])}px`,
+            boxShadow: "0 12px 34px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          {HERO_CALLOUT.text}
+        </Interactive.Div>
+      </AbsoluteFill>
+
+      {/* The model wall — we have flown through the dashboard into the catalog */}
+      <AbsoluteFill
+        name="Model wall"
+        style={{
+          opacity: exitOpacity,
+          translate: `0px ${wallDrift}px`,
+        }}
+      >
+        {CHIPS.map((chip) => {
           const pop = spring({
-            frame: frame - c.at,
+            frame: frame - (WALL_FROM + (chip.row + chip.col) * 2.6),
             fps,
-            config: { damping: 13, mass: 0.8, stiffness: 150 },
+            config: { damping: 14, mass: 0.8, stiffness: 140 },
           });
           return (
             <Interactive.Div
-              key={c.text}
-              name={`Callout: ${c.text}`}
+              key={chip.name}
+              name={`Model: ${chip.name}`}
               style={{
                 position: "absolute",
-                top: c.top,
-                left: c.left,
-                fontFamily: font.family,
-                fontSize: 27,
-                fontWeight: 600,
-                color: colors.background,
-                backgroundColor: colors.primary,
-                padding: "12px 24px",
-                borderRadius: 12,
+                left: ORIGIN_X + chip.col * PITCH_X,
+                top: ORIGIN_Y + chip.row * PITCH_Y,
+                width: CHIP_W,
+                height: CHIP_H,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: font.mono,
+                fontSize: 16,
+                color: chip.accent ? colors.primary : colors.text,
+                backgroundColor: "rgba(30, 30, 28, 0.92)",
+                border: `1px solid ${chip.accent ? "rgba(254, 244, 122, 0.45)" : colors.faint}`,
+                borderRadius: 10,
                 opacity: interpolate(pop, [0, 0.5], [0, 1], { extrapolateRight: "clamp" }),
                 scale: `${interpolate(pop, [0, 1], [0.6, 1])}`,
-                translate: `0px ${interpolate(pop, [0, 1], [18, 0])}px`,
-                boxShadow: "0 12px 34px rgba(0, 0, 0, 0.4)",
+                translate: `0px ${interpolate(pop, [0, 1], [14, 0])}px`,
               }}
             >
-              {c.text}
+              {chip.name}
             </Interactive.Div>
           );
         })}
 
-        {/* Dim mono micro-callouts keep the fullscreen hold alive */}
-        {MICRO_CALLOUTS.map((c) => {
-          const pop = spring({
-            frame: frame - c.at,
-            fps,
-            config: { damping: 16, mass: 0.8, stiffness: 140 },
-          });
-          return (
-            <Interactive.Div
-              key={c.text}
-              name={`Micro-callout: ${c.text}`}
-              style={{
-                position: "absolute",
-                top: c.top,
-                left: c.left,
-                fontFamily: font.mono,
-                fontSize: 19,
-                color: colors.text,
-                backgroundColor: "rgba(20, 20, 19, 0.82)",
-                border: `1px solid ${colors.faint}`,
-                padding: "8px 16px",
-                borderRadius: 8,
-                opacity: interpolate(pop, [0, 0.5], [0, 0.92], { extrapolateRight: "clamp" }),
-                translate: `0px ${interpolate(pop, [0, 1], [10, 0])}px`,
-              }}
-            >
-              {c.text}
-            </Interactive.Div>
-          );
-        })}
+        {/* Counter in the calm center of the wall */}
+        <Interactive.Div
+          name="Model counter"
+          style={{
+            position: "absolute",
+            left: ORIGIN_X + HOLE_COLS[0] * PITCH_X,
+            top: ORIGIN_Y + HOLE_ROWS[0] * PITCH_Y - 40,
+            width: 3 * PITCH_X - (PITCH_X - CHIP_W),
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 18,
+          }}
+        >
+          <Interactive.Div
+            name="Counter label"
+            style={{
+              fontFamily: font.mono,
+              fontSize: 20,
+              letterSpacing: 5,
+              color: colors.muted,
+              opacity: interpolate(frame, [134, 146], [0, 0.9], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.bezier(0.16, 1, 0.3, 1),
+              }),
+            }}
+          >
+            OPEN MODELS · ONE API KEY
+          </Interactive.Div>
+          <Interactive.Div
+            name="Counter value"
+            style={{
+              fontFamily: font.mono,
+              fontSize: 118,
+              fontWeight: 700,
+              letterSpacing: "-2px",
+              color: landed ? colors.primary : colors.text,
+              scale: `${counterBreathe * interpolate(landPop, [0, 1], [0.94, 1])}`,
+            }}
+          >
+            {counterValue.toLocaleString("en-US")}
+            {landed ? "+" : ""}
+          </Interactive.Div>
+          <Interactive.Div
+            name="Counter substats"
+            style={{
+              fontFamily: font.family,
+              fontSize: 24,
+              color: colors.muted,
+              opacity: interpolate(frame, [SUBSTATS_AT, SUBSTATS_AT + 12], [0, 1], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.bezier(0.16, 1, 0.3, 1),
+              }),
+              translate: `0px ${interpolate(frame, [SUBSTATS_AT, SUBSTATS_AT + 12], [10, 0], {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.bezier(0.16, 1, 0.3, 1),
+              })}px`,
+            }}
+          >
+            Zero cold starts · flat-rate pricing
+          </Interactive.Div>
+        </Interactive.Div>
       </AbsoluteFill>
     </AbsoluteFill>
   );

@@ -177,13 +177,14 @@ export const CodeBeat: React.FC = () => {
           )}
         </Interactive.Div>
 
-        {/* Latency badge */}
+        {/* Latency badge — docked to the code window's top-right corner */}
         <Interactive.Div
           name="Latency badge"
           style={{
             position: "absolute",
-            top: 120,
-            right: 150,
+            // window right edge (1920-1180)/2 + 370+1180=1550; 1550-180 badge width margin
+            right: 1920 / 2 - 1180 / 2 + 28,
+            top: 240 - 78,
             fontFamily: font.mono,
             fontSize: 30,
             fontWeight: 700,
