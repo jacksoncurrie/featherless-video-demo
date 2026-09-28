@@ -4,4 +4,6 @@ dist
 .env
 
 # Ignore the output video from Git but not videos you import into src/.
-out
+out/*
+# Keep the final rendered demo in the repo.
+!out/demo.mp4
