@@ -1,5 +1,7 @@
-// Scene 4 — Code beat (120 frames): typewriter API call, streaming response,
-// latency badge counts down to 87ms. Code is the real Featherless quickstart.
+// Scene 4 — Code beat (180 frames): typewriter API call typed deliberately
+// slowly (~2.8 chars/frame vs the old ~4.4), streaming response revealed piece
+// by piece, latency badge counts down to 87ms, then the finished result HOLDS
+// so it can be read. Code is the real Featherless quickstart.
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
@@ -9,7 +11,7 @@ const CODE: [string, string][] = [
   ["from", "#C792EA"], [" openai ", "#FAFAFA"], ["import", "#C792EA"], [" OpenAI", "#82AAFF"],
   ["\n\nclient", "#FAFAFA"], [" = ", "#89DDFF"], ["OpenAI", "#82AAFF"], ["(\n  base_url", "#FAFAFA"],
   ["=", "#89DDFF"], ["\"https://api.featherless.ai/v1\"", "#C3E88D"],
-  [",\n  api_key", "#FAFAFA"], ["=", "#89DDFF"], ["=\"fl_sk_…\"", "#C3E88D"], [",\n)\n\n", "#FAFAFA"],
+  [",\n  api_key", "#FAFAFA"], ["=", "#89DDFF"], ["\"fl_sk_…\"", "#C3E88D"], [",\n)\n\n", "#FAFAFA"],
   ["response", "#FAFAFA"], [" = ", "#89DDFF"], ["client", "#FAFAFA"], [".chat.completions.", "#FAFAFA"],
   ["create", "#82AAFF"], ["(\n  model", "#FAFAFA"], ["=", "#89DDFF"],
   ["\"zai-org/GLM-5.3\"", "#C3E88D"],
@@ -18,12 +20,26 @@ const CODE: [string, string][] = [
   ["print", "#82AAFF"], ["(response.choices[", "#FAFAFA"], ["0", "#F78C6C"], ["].message.content)", "#FAFAFA"],
 ];
 
-const RESPONSE_CHUNKS = [
-  "Hello! I'm running on Featherless —",
-  " serverless inference across 40,000+",
-  " open models. No clusters to manage,",
-  " no idle GPU spend.",
+// Response arrives piece by piece — smaller pieces mean the "text output"
+// streams visibly rather than landing as one dump.
+const RESPONSE_PIECES = [
+  "Hello! I'm running on ",
+  "Featherless — serverless ",
+  "inference across 40,000+ ",
+  "open models. No ",
+  "clusters to manage, no ",
+  "idle GPU spend.",
 ];
+
+const TYPE_FROM = 8;
+const TYPE_TO = 118; // 110 frames (~3.7s) of typing — deliberately slow
+const RESP_FROM = 122; // response starts once the call is complete
+const PIECE_EVERY = 5; // a new response piece every 5 frames
+const BADGE_FROM = 116;
+const LATENCY_FROM = 118;
+const LATENCY_TO = 148;
+const BADGE_LIVE = 144; // badge turns green / shows p50
+const EXIT_FROM = 170; // result holds up to here, then fades
 
 export const CodeBeat: React.FC = () => {
   const frame = useCurrentFrame();
@@ -32,10 +48,10 @@ export const CodeBeat: React.FC = () => {
   // Flatten code with cumulative char counts for typewriter
   const totalChars = CODE.reduce((n, [t]) => n + t.length, 0);
   const typedChars = Math.round(
-    interpolate(frame, [6, 78], [0, totalChars], {
+    interpolate(frame, [TYPE_FROM, TYPE_TO], [0, totalChars], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.bezier(0.3, 0, 0.4, 1),
+      easing: Easing.bezier(0.35, 0.05, 0.4, 1),
     }),
   );
 
@@ -48,23 +64,25 @@ export const CodeBeat: React.FC = () => {
     used += text.length;
   }
 
-  // Streaming response: chunks appear 84..108, then the finished result holds
-  // (with a gentle brightness settle) until the scene ends — readable time.
-  const chunkAt = [84, 90, 96, 102];
-  const shownChunks = RESPONSE_CHUNKS.filter((_, i) => frame >= chunkAt[i]).length;
+  // Streaming response: one piece per PIECE_EVERY frames, then the finished
+  // result holds (with a gentle settle) until EXIT_FROM.
+  const shownChunks = Math.max(
+    0,
+    Math.min(RESPONSE_PIECES.length, Math.floor((frame - RESP_FROM) / PIECE_EVERY) + 1),
+  );
   const cursorOn = Math.floor(frame / 5) % 2 === 0;
 
-  // Latency badge: counts down 412ms -> 87ms during 80..106
+  // Latency badge: counts down 412ms -> 87ms
   const latency = Math.round(
-    interpolate(frame, [80, 106], [412, 87], {
+    interpolate(frame, [LATENCY_FROM, LATENCY_TO], [412, 87], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
       easing: Easing.bezier(0.5, 0, 0.2, 1),
     }),
   );
-  const badgeIn = spring({ frame: frame - 78, fps, config: { damping: 14, mass: 0.8, stiffness: 150 } });
+  const badgeIn = spring({ frame: frame - BADGE_FROM, fps, config: { damping: 14, mass: 0.8, stiffness: 150 } });
 
-  const exitOpacity = interpolate(frame, [112, 120], [1, 0], {
+  const exitOpacity = interpolate(frame, [EXIT_FROM, 180], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),
@@ -127,7 +145,7 @@ export const CodeBeat: React.FC = () => {
                 {text}
               </span>
             ))}
-            {frame < 66 && (
+            {frame < TYPE_TO + 4 && (
               <span
                 style={{
                   display: "inline-block",
@@ -142,7 +160,7 @@ export const CodeBeat: React.FC = () => {
           </div>
 
           {/* Streaming response */}
-          {frame >= 80 && (
+          {frame >= RESP_FROM && (
             <div
               style={{
                 margin: "0 36px 32px 36px",
@@ -156,10 +174,10 @@ export const CodeBeat: React.FC = () => {
                 color: colors.text,
               }}
             >
-              {RESPONSE_CHUNKS.slice(0, shownChunks).map((chunk, i) => (
+              {RESPONSE_PIECES.slice(0, shownChunks).map((chunk, i) => (
                 <span key={i}>{chunk}</span>
               ))}
-              {shownChunks < RESPONSE_CHUNKS.length && (
+              {shownChunks < RESPONSE_PIECES.length && (
                 <span
                   style={{
                     display: "inline-block",
@@ -171,7 +189,7 @@ export const CodeBeat: React.FC = () => {
                   }}
                 />
               )}
-              {shownChunks === RESPONSE_CHUNKS.length && (
+              {shownChunks === RESPONSE_PIECES.length && (
                 <span style={{ color: colors.accent }}> ✓</span>
               )}
             </div>
@@ -189,16 +207,16 @@ export const CodeBeat: React.FC = () => {
             fontFamily: font.mono,
             fontSize: 30,
             fontWeight: 700,
-            color: frame >= 96 ? colors.background : colors.text,
-            backgroundColor: frame >= 96 ? colors.accent : colors.surface,
-            border: `1px solid ${frame >= 96 ? colors.accent : colors.faint}`,
+            color: frame >= BADGE_LIVE ? colors.background : colors.text,
+            backgroundColor: frame >= BADGE_LIVE ? colors.accent : colors.surface,
+            border: `1px solid ${frame >= BADGE_LIVE ? colors.accent : colors.faint}`,
             borderRadius: 14,
             padding: "14px 26px",
             opacity: interpolate(badgeIn, [0, 0.6], [0, 1], { extrapolateRight: "clamp" }),
             scale: `${interpolate(badgeIn, [0, 1], [0.6, 1])}`,
           }}
         >
-          {frame >= 96 ? `p50 ${latency}ms` : `${latency}ms…`}
+          {frame >= BADGE_LIVE ? `p50 ${latency}ms` : `${latency}ms…`}
         </Interactive.Div>
       </AbsoluteFill>
     </AbsoluteFill>

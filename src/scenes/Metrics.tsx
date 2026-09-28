@@ -1,4 +1,4 @@
-// Scene 5 — Metrics (210 frames): cost-per-request comparison bars with
+// Scene 5 — Metrics (150 frames): cost-per-request comparison bars with
 // roll-up counters. Numbers: Featherless ~10x cheaper (grounded in their claims).
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
@@ -10,9 +10,8 @@ const BARS = [
   { label: "Baseline B (on-demand)", value: 9.8, color: "#4a4a47", sub: "$1.08 / 1M tokens" },
 ];
 
-// Live throughput ticker — starts as bars settle (~92), keeps the scene moving
-// until the savings counter takes over at 130.
-const TICKER_FROM = 92;
+const SAVINGS_FROM = 78; // savings counter takes over once the bars have settled
+const SAVINGS_TO = 120;
 
 export const Metrics: React.FC = () => {
   const frame = useCurrentFrame();
@@ -21,28 +20,20 @@ export const Metrics: React.FC = () => {
   const titleIn = spring({ frame, fps, config: { damping: 16, mass: 0.9, stiffness: 120 } });
   const maxW = 1180;
 
-  const exitOpacity = interpolate(frame, [200, 210], [1, 0], {
+  const exitOpacity = interpolate(frame, [138, 150], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),
   });
 
   // Rolling counter for savings multiplier: 1.0x -> 9.8x
-  const savings = interpolate(frame, [130, 172], [1, 9.8], {
+  const savings = interpolate(frame, [SAVINGS_FROM, SAVINGS_TO], [1, 9.8], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.2, 0.8, 0.2, 1),
   });
 
-  // Throughput ticker: 840 -> 2,412 req/s, continuously drifting after bars settle
-  const ticker = interpolate(frame, [TICKER_FROM, 128], [840, 2412], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.bezier(0.3, 0.4, 0.3, 1),
-  });
-  const tickerIn = spring({ frame: frame - TICKER_FROM, fps, config: { damping: 200 } });
-
-  const footnoteOpacity = interpolate(frame, [180, 192], [0, 0.7], {
+  const footnoteOpacity = interpolate(frame, [124, 134], [0, 0.7], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.16, 1, 0.3, 1),
@@ -83,7 +74,7 @@ export const Metrics: React.FC = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: 34, width: maxW }}>
           {BARS.map((bar, i) => {
             const grow = spring({
-              frame: frame - (24 + i * 18),
+              frame: frame - (20 + i * 14),
               fps,
               config: { damping: 200, mass: 1 },
             });
@@ -134,12 +125,12 @@ export const Metrics: React.FC = () => {
             fontSize: 56,
             fontWeight: 700,
             color: colors.primary,
-            opacity: interpolate(frame, [128, 140], [0, 1], {
+            opacity: interpolate(frame, [74, 86], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.16, 1, 0.3, 1),
             }),
-            scale: `${interpolate(spring({ frame: frame - 172, fps, config: { damping: 12, mass: 0.8, stiffness: 160 } }), [0, 1], [1, 1.06])}`,
+            scale: `${interpolate(spring({ frame: frame - SAVINGS_TO, fps, config: { damping: 12, mass: 0.8, stiffness: 160 } }), [0, 1], [1, 1.06])}`,
           }}
         >
           {savings.toFixed(1)}× cheaper
@@ -148,27 +139,6 @@ export const Metrics: React.FC = () => {
         <div style={{ fontFamily: font.family, fontSize: 20, color: colors.muted, opacity: footnoteOpacity }}>
           Cost per 1M tokens, chat workloads, list pricing. Multiplier vs. on-demand baseline.
         </div>
-
-        {/* Live throughput ticker */}
-        <Interactive.Div
-          name="Throughput ticker"
-          style={{
-            position: "absolute",
-            top: 150,
-            right: 150,
-            fontFamily: font.mono,
-            fontSize: 24,
-            color: colors.muted,
-            backgroundColor: "rgba(30, 30, 28, 0.85)",
-            border: `1px solid ${colors.faint}`,
-            padding: "10px 20px",
-            borderRadius: 10,
-            opacity: interpolate(tickerIn, [0, 1], [0, 0.95]),
-            translate: `0px ${interpolate(tickerIn, [0, 1], [8, 0])}px`,
-          }}
-        >
-          {Math.round(ticker).toLocaleString("en-US")} req/s live
-        </Interactive.Div>
       </AbsoluteFill>
     </AbsoluteFill>
   );

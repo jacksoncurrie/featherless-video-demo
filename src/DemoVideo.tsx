@@ -1,5 +1,13 @@
 // Main demo composition: 6 scenes, 900 frames @ 30fps = 30s.
-// Music: 128 BPM synthesized track, volume 0.4, fades out over final 60 frames.
+// Music: 128 BPM synthesized track, volume 0.75, fades out over final 60 frames.
+//
+// Scene map (abs frames):
+//   Hook      0- 90   word-by-word claims land on the beat
+//   Problem  90-210   the pain
+//   Product 210-450   mockup dives into the model wall; counter locks at ~408 (13.6s)
+//   CodeBeat 450-630  slow typewriter quickstart + streaming result + hold
+//   Metrics 630-780   cost bars + savings multiplier
+//   Outro   780-900   real Lottie logo (playbackRate 1) + tagline + CTA
 import React from "react";
 import { AbsoluteFill, Sequence, staticFile, interpolate } from "remotion";
 import { Audio } from "@remotion/media";
@@ -33,10 +41,10 @@ export const DemoVideo: React.FC = () => {
       <Sequence from={210} durationInFrames={240} name="Product">
         <Product />
       </Sequence>
-      <Sequence from={450} durationInFrames={120} name="CodeBeat">
+      <Sequence from={450} durationInFrames={180} name="CodeBeat">
         <CodeBeat />
       </Sequence>
-      <Sequence from={570} durationInFrames={210} name="Metrics">
+      <Sequence from={630} durationInFrames={150} name="Metrics">
         <Metrics />
       </Sequence>
       <Sequence from={780} durationInFrames={120} name="Outro">

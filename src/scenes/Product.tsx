@@ -165,14 +165,14 @@ export const Product: React.FC = () => {
                 color: colors.muted,
               }}
             >
-              featherless.ai/models
+              featherless.ai
             </div>
             <div style={{ width: 200 }} />
           </div>
-          {/* Screenshot */}
+          {/* Real homepage capture (16:9 crop, top-anchored in the frame) */}
           <Img
-            name="Dashboard screenshot"
-            src={staticFile("screenshot-dashboard.png")}
+            name="Homepage screenshot"
+            src={staticFile("screenshot-homepage.png")}
             style={{
               width: "100%",
               height: "calc(100% - 54px)",

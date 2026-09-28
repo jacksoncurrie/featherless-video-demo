@@ -39,7 +39,7 @@ export const Outro: React.FC = () => {
         >
           <Lottie
             animationData={animationData as never}
-            playbackRate={0.5}
+            playbackRate={1}
             style={{ width: 960 }}
           />
         </Interactive.Div>
