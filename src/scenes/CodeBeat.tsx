@@ -32,7 +32,7 @@ export const CodeBeat: React.FC = () => {
   // Flatten code with cumulative char counts for typewriter
   const totalChars = CODE.reduce((n, [t]) => n + t.length, 0);
   const typedChars = Math.round(
-    interpolate(frame, [8, 64], [0, totalChars], {
+    interpolate(frame, [6, 78], [0, totalChars], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
       easing: Easing.bezier(0.3, 0, 0.4, 1),
@@ -48,20 +48,21 @@ export const CodeBeat: React.FC = () => {
     used += text.length;
   }
 
-  // Streaming response: chunks appear 70..112
-  const chunkAt = [70, 79, 88, 97];
+  // Streaming response: chunks appear 84..108, then the finished result holds
+  // (with a gentle brightness settle) until the scene ends — readable time.
+  const chunkAt = [84, 90, 96, 102];
   const shownChunks = RESPONSE_CHUNKS.filter((_, i) => frame >= chunkAt[i]).length;
   const cursorOn = Math.floor(frame / 5) % 2 === 0;
 
-  // Latency badge: counts down 412ms -> 87ms during 66..96
+  // Latency badge: counts down 412ms -> 87ms during 80..106
   const latency = Math.round(
-    interpolate(frame, [66, 96], [412, 87], {
+    interpolate(frame, [80, 106], [412, 87], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
       easing: Easing.bezier(0.5, 0, 0.2, 1),
     }),
   );
-  const badgeIn = spring({ frame: frame - 64, fps, config: { damping: 14, mass: 0.8, stiffness: 150 } });
+  const badgeIn = spring({ frame: frame - 78, fps, config: { damping: 14, mass: 0.8, stiffness: 150 } });
 
   const exitOpacity = interpolate(frame, [112, 120], [1, 0], {
     extrapolateLeft: "clamp",
@@ -141,7 +142,7 @@ export const CodeBeat: React.FC = () => {
           </div>
 
           {/* Streaming response */}
-          {frame >= 66 && (
+          {frame >= 80 && (
             <div
               style={{
                 margin: "0 36px 32px 36px",

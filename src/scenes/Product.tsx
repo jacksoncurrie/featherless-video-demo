@@ -5,8 +5,8 @@ import React from "react";
 import { AbsoluteFill, Easing, Interactive, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
 
-// One hero callout on the settled mockup — sets up the wall.
-const HERO_CALLOUT = { text: "40,000+ models, one key", at: 64 };
+// One hero callout on the settled mockup — removed: the model wall that
+// follows owns the "40,000+ models" reveal, so saying it twice reads as filler.
 
 const DIVE_FROM = 112; // mockup flies toward / past the camera
 const WALL_FROM = 128; // first chips land
@@ -79,23 +79,11 @@ export const Product: React.FC = () => {
   const floating = Math.sin(frame / 26) * 8;
   const shadow = 40 + 18 * Math.sin(frame / 26);
 
-  // Hero callout: pops in, then exits as the dive starts.
-  const calloutPop = spring({
-    frame: frame - HERO_CALLOUT.at,
-    fps,
-    config: { damping: 13, mass: 0.8, stiffness: 150 },
-  });
-  const calloutOpacity =
-    interpolate(calloutPop, [0, 0.5], [0, 1], { extrapolateRight: "clamp" }) *
-    interpolate(frame, [112, 120], [1, 0], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.bezier(0.4, 0, 1, 1),
-    });
-
   // Wall: counter value rolls up, locks at 40,000+.
+  // Hidden until COUNTER_FROM so no stray "0" shows while the wall cascades in.
+  const counterVisible = frame >= COUNTER_FROM;
   const counterValue = Math.round(
-    interpolate(frame, [COUNTER_FROM, COUNTER_TO], [0, 40000], {
+    interpolate(frame, [COUNTER_FROM, COUNTER_TO], [1, 40000], {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
       easing: Easing.bezier(0.25, 0.65, 0.2, 1),
@@ -195,29 +183,7 @@ export const Product: React.FC = () => {
           />
         </Interactive.Div>
 
-        {/* Hero callout on the settled mockup */}
-        <Interactive.Div
-          name="Callout: 40,000+ models"
-          style={{
-            position: "absolute",
-            top: "18%",
-            left: "8%",
-            fontFamily: font.family,
-            fontSize: 27,
-            fontWeight: 600,
-            color: colors.background,
-            backgroundColor: colors.primary,
-            padding: "12px 24px",
-            borderRadius: 12,
-            opacity: calloutOpacity,
-            scale: `${interpolate(calloutPop, [0, 1], [0.6, 1])}`,
-            translate: `0px ${interpolate(calloutPop, [0, 1], [18, 0])}px`,
-            boxShadow: "0 12px 34px rgba(0, 0, 0, 0.4)",
-          }}
-        >
-          {HERO_CALLOUT.text}
-        </Interactive.Div>
-      </AbsoluteFill>
+        </AbsoluteFill>
 
       {/* The model wall — we have flown through the dashboard into the catalog */}
       <AbsoluteFill
@@ -302,6 +268,7 @@ export const Product: React.FC = () => {
               letterSpacing: "-2px",
               color: landed ? colors.primary : colors.text,
               scale: `${counterBreathe * interpolate(landPop, [0, 1], [0.94, 1])}`,
+              opacity: counterVisible ? 1 : 0,
             }}
           >
             {counterValue.toLocaleString("en-US")}
