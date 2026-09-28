@@ -10,6 +10,10 @@ const BARS = [
   { label: "Baseline B (on-demand)", value: 9.8, color: "#4a4a47", sub: "$1.08 / 1M tokens" },
 ];
 
+// Live throughput ticker — starts as bars settle (~92), keeps the scene moving
+// until the savings counter takes over at 130.
+const TICKER_FROM = 92;
+
 export const Metrics: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -29,6 +33,14 @@ export const Metrics: React.FC = () => {
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.2, 0.8, 0.2, 1),
   });
+
+  // Throughput ticker: 840 -> 2,412 req/s, continuously drifting after bars settle
+  const ticker = interpolate(frame, [TICKER_FROM, 128], [840, 2412], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.3, 0.4, 0.3, 1),
+  });
+  const tickerIn = spring({ frame: frame - TICKER_FROM, fps, config: { damping: 200 } });
 
   const footnoteOpacity = interpolate(frame, [180, 192], [0, 0.7], {
     extrapolateLeft: "clamp",
@@ -136,6 +148,27 @@ export const Metrics: React.FC = () => {
         <div style={{ fontFamily: font.family, fontSize: 20, color: colors.muted, opacity: footnoteOpacity }}>
           Cost per 1M tokens, chat workloads, list pricing. Multiplier vs. on-demand baseline.
         </div>
+
+        {/* Live throughput ticker */}
+        <Interactive.Div
+          name="Throughput ticker"
+          style={{
+            position: "absolute",
+            top: 150,
+            right: 150,
+            fontFamily: font.mono,
+            fontSize: 24,
+            color: colors.muted,
+            backgroundColor: "rgba(30, 30, 28, 0.85)",
+            border: `1px solid ${colors.faint}`,
+            padding: "10px 20px",
+            borderRadius: 10,
+            opacity: interpolate(tickerIn, [0, 1], [0, 0.95]),
+            translate: `0px ${interpolate(tickerIn, [0, 1], [8, 0])}px`,
+          }}
+        >
+          {Math.round(ticker).toLocaleString("en-US")} req/s live
+        </Interactive.Div>
       </AbsoluteFill>
     </AbsoluteFill>
   );

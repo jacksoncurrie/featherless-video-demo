@@ -10,6 +10,13 @@ const CALLOUTS = [
   { text: "Flat-rate pricing", at: 160, top: "72%", left: "14%" },
 ];
 
+// Secondary micro-callouts during the fullscreen hold (195-228) so the
+// reveal never sits perfectly still.
+const MICRO_CALLOUTS = [
+  { text: "API key: fl_sk_live…", at: 196, top: "24%", left: "72%" },
+  { text: "v2 endpoint", at: 208, top: "62%", left: "9%" },
+];
+
 export const Product: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -144,6 +151,37 @@ export const Product: React.FC = () => {
                 scale: `${interpolate(pop, [0, 1], [0.6, 1])}`,
                 translate: `0px ${interpolate(pop, [0, 1], [18, 0])}px`,
                 boxShadow: "0 12px 34px rgba(0, 0, 0, 0.4)",
+              }}
+            >
+              {c.text}
+            </Interactive.Div>
+          );
+        })}
+
+        {/* Dim mono micro-callouts keep the fullscreen hold alive */}
+        {MICRO_CALLOUTS.map((c) => {
+          const pop = spring({
+            frame: frame - c.at,
+            fps,
+            config: { damping: 16, mass: 0.8, stiffness: 140 },
+          });
+          return (
+            <Interactive.Div
+              key={c.text}
+              name={`Micro-callout: ${c.text}`}
+              style={{
+                position: "absolute",
+                top: c.top,
+                left: c.left,
+                fontFamily: font.mono,
+                fontSize: 19,
+                color: colors.text,
+                backgroundColor: "rgba(20, 20, 19, 0.82)",
+                border: `1px solid ${colors.faint}`,
+                padding: "8px 16px",
+                borderRadius: 8,
+                opacity: interpolate(pop, [0, 0.5], [0, 0.92], { extrapolateRight: "clamp" }),
+                translate: `0px ${interpolate(pop, [0, 1], [10, 0])}px`,
               }}
             >
               {c.text}
