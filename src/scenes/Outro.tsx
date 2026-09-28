@@ -1,9 +1,10 @@
-// Scene 6 — Outro (120 frames): the real Featherless Lottie logo draws in,
-// tagline, CTA as plain text, 20-frame hold.
+// Scene 6 — Outro (120 frames): the brand mark springs in, tagline, CTA,
+// then holds. The logo is a STATIC asset (public/featherless-logo.png), frozen
+// from the complete frame of the real Featherless Lottie — the Lottie's own
+// timeline ends by flying the wordmark away, and its runtime state proved
+// nondeterministic (it rendered decayed at the end of a full render).
 import React from "react";
-import { AbsoluteFill, Interactive, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { Lottie } from "@remotion/lottie";
-import animationData from "../../public/featherless-logo.json";
+import { AbsoluteFill, Img, Interactive, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
 import { Backdrop } from "../components/Backdrop";
 
@@ -11,7 +12,7 @@ export const Outro: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const logoSpring = spring({ frame, fps, config: { damping: 13, mass: 1, stiffness: 120 } });
+  const logoSpring = spring({ frame, fps, config: { damping: 12, mass: 1, stiffness: 140 } });
   const taglineIn = spring({ frame: frame - 22, fps, config: { damping: 18, mass: 0.9, stiffness: 130 } });
   const ctaIn = spring({ frame: frame - 40, fps, config: { damping: 18, mass: 0.9, stiffness: 130 } });
 
@@ -26,21 +27,21 @@ export const Outro: React.FC = () => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 44,
+          gap: 48,
         }}
       >
         <Interactive.Div
           name="Logo"
           style={{
             opacity: interpolate(logoSpring, [0, 0.7], [0, 1], { extrapolateRight: "clamp" }),
-            scale: `${interpolate(logoSpring, [0, 1], [0.6, 1]) * breathe}`,
-            translate: `0px ${interpolate(logoSpring, [0, 1], [40, 0])}px`,
+            scale: `${interpolate(logoSpring, [0, 1], [0.62, 1]) * breathe}`,
+            translate: `0px ${interpolate(logoSpring, [0, 1], [36, 0])}px`,
           }}
         >
-          <Lottie
-            animationData={animationData as never}
-            playbackRate={1}
-            style={{ width: 960 }}
+          <Img
+            name="Featherless logo"
+            src={staticFile("featherless-logo.png")}
+            style={{ width: 920, display: "block" }}
           />
         </Interactive.Div>
 

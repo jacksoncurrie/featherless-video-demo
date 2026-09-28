@@ -1,5 +1,5 @@
-// Scene 5 — Metrics (150 frames): cost-per-request comparison bars with
-// roll-up counters. Numbers: Featherless ~10x cheaper (grounded in their claims).
+// Scene 5 — Metrics (180 frames): cost-per-request comparison bars with
+// roll-up counters, then a long hold on the settled comparison. Numbers: ~10x.
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
@@ -20,7 +20,7 @@ export const Metrics: React.FC = () => {
   const titleIn = spring({ frame, fps, config: { damping: 16, mass: 0.9, stiffness: 120 } });
   const maxW = 1180;
 
-  const exitOpacity = interpolate(frame, [138, 150], [1, 0], {
+  const exitOpacity = interpolate(frame, [168, 180], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),

@@ -1,6 +1,7 @@
-// Scene 3 — Product (240 frames): browser mockup tilts in with the dashboard,
-// then we dive THROUGH it into a cascading wall of real model names while a
-// counter rolls to 40,000+.
+// Scene 3 — Product (180 frames): browser mockup tilts in with the homepage,
+// we hold briefly, then dive THROUGH it into a cascading wall of real model
+// names while a counter rolls to 40,000+. Kept brisk — the homepage dwell is
+// short and the scene rushes into the model count.
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
@@ -8,11 +9,11 @@ import { colors, font } from "../theme";
 // One hero callout on the settled mockup — removed: the model wall that
 // follows owns the "40,000+ models" reveal, so saying it twice reads as filler.
 
-const DIVE_FROM = 112; // mockup flies toward / past the camera
-const WALL_FROM = 128; // first chips land
-const COUNTER_FROM = 138;
-const COUNTER_TO = 198; // 40,000+ locks in
-const SUBSTATS_AT = 204;
+const DIVE_FROM = 76; // mockup flies toward / past the camera
+const WALL_FROM = 86; // first chips land
+const COUNTER_FROM = 96;
+const COUNTER_TO = 150; // 40,000+ locks in
+const SUBSTATS_AT = 154;
 
 // Real model names from the Featherless catalog (short display forms).
 const MODEL_NAMES = [
@@ -61,8 +62,8 @@ export const Product: React.FC = () => {
   const rotateX = interpolate(tiltIn, [0, 1], [14, 2]);
   const rotateZ = interpolate(tiltIn, [0, 1], [-12, -3.5]);
 
-  // Phase 2 (46-76): settle upright
-  const upright = spring({ frame: frame - 46, fps, config: { damping: 18, mass: 1, stiffness: 120 } });
+  // Phase 2 (34-62): settle upright quickly, then dive — little homepage dwell
+  const upright = spring({ frame: frame - 34, fps, config: { damping: 18, mass: 1, stiffness: 120 } });
   const rotZ = interpolate(upright, [0, 1], [rotateZ, 0]);
   const rotX = interpolate(upright, [0, 1], [rotateX, 0]);
   const w = interpolate(upright, [0, 1], [width, 1640]);
@@ -70,7 +71,7 @@ export const Product: React.FC = () => {
   // Phase 3 (112+): dive through the screen toward the wall
   const dive = spring({ frame: frame - DIVE_FROM, fps, config: { damping: 26, mass: 1 } });
   const finalW = interpolate(dive, [0, 1], [w, 2800]);
-  const mockupOpacity = interpolate(frame, [126, 148], [1, 0], {
+  const mockupOpacity = interpolate(frame, [78, 100], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),
@@ -96,7 +97,7 @@ export const Product: React.FC = () => {
   // Whole-wall slow drift so nothing is ever perfectly still.
   const wallDrift = Math.sin(frame / 38) * 9;
 
-  const exitOpacity = interpolate(frame, [228, 240], [1, 0], {
+  const exitOpacity = interpolate(frame, [168, 180], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),
@@ -250,7 +251,7 @@ export const Product: React.FC = () => {
               fontSize: 20,
               letterSpacing: 5,
               color: colors.muted,
-              opacity: interpolate(frame, [134, 146], [0, 0.9], {
+              opacity: interpolate(frame, [92, 104], [0, 0.9], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
                 easing: Easing.bezier(0.16, 1, 0.3, 1),

@@ -4,10 +4,11 @@
 // Scene map (abs frames):
 //   Hook      0- 90   word-by-word claims land on the beat
 //   Problem  90-210   the pain
-//   Product 210-450   mockup dives into the model wall; counter locks at ~408 (13.6s)
-//   CodeBeat 450-630  slow typewriter quickstart + streaming result + hold
-//   Metrics 630-780   cost bars + savings multiplier
-//   Outro   780-900   real Lottie logo (playbackRate 1) + tagline + CTA
+//   Product 210-390   mockup tilts in, brief homepage dwell, dives into the model
+//                     wall; counter locks at 40,000+ (~abs 360)
+//   CodeBeat 390-600  slow typewriter quickstart + streaming result + long hold
+//   Metrics 600-780   cost bars + savings multiplier, held on the comparison
+//   Outro   780-900   brand mark + tagline + CTA
 import React from "react";
 import { AbsoluteFill, Sequence, staticFile, interpolate } from "remotion";
 import { Audio } from "@remotion/media";
@@ -38,13 +39,13 @@ export const DemoVideo: React.FC = () => {
       <Sequence from={90} durationInFrames={120} name="Problem">
         <Problem />
       </Sequence>
-      <Sequence from={210} durationInFrames={240} name="Product">
+      <Sequence from={210} durationInFrames={180} name="Product">
         <Product />
       </Sequence>
-      <Sequence from={450} durationInFrames={180} name="CodeBeat">
+      <Sequence from={390} durationInFrames={210} name="CodeBeat">
         <CodeBeat />
       </Sequence>
-      <Sequence from={630} durationInFrames={150} name="Metrics">
+      <Sequence from={600} durationInFrames={180} name="Metrics">
         <Metrics />
       </Sequence>
       <Sequence from={780} durationInFrames={120} name="Outro">

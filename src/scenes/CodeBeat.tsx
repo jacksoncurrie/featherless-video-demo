@@ -1,7 +1,7 @@
-// Scene 4 — Code beat (180 frames): typewriter API call typed deliberately
+// Scene 4 — Code beat (210 frames): typewriter API call typed deliberately
 // slowly (~2.8 chars/frame vs the old ~4.4), streaming response revealed piece
 // by piece, latency badge counts down to 87ms, then the finished result HOLDS
-// so it can be read. Code is the real Featherless quickstart.
+// for ~2s so it can be read before the scene changes. Real Featherless quickstart.
 import React from "react";
 import { AbsoluteFill, Easing, Interactive, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { colors, font } from "../theme";
@@ -39,7 +39,8 @@ const BADGE_FROM = 116;
 const LATENCY_FROM = 118;
 const LATENCY_TO = 148;
 const BADGE_LIVE = 144; // badge turns green / shows p50
-const EXIT_FROM = 170; // result holds up to here, then fades
+const EXIT_FROM = 200; // result holds up to here, then fades
+const EXIT_TO = 210;
 
 export const CodeBeat: React.FC = () => {
   const frame = useCurrentFrame();
@@ -82,7 +83,7 @@ export const CodeBeat: React.FC = () => {
   );
   const badgeIn = spring({ frame: frame - BADGE_FROM, fps, config: { damping: 14, mass: 0.8, stiffness: 150 } });
 
-  const exitOpacity = interpolate(frame, [EXIT_FROM, 180], [1, 0], {
+  const exitOpacity = interpolate(frame, [EXIT_FROM, EXIT_TO], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(0.4, 0, 1, 1),
