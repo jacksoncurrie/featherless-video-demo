@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 96" width="240" height="96">
+  <!-- Featherless logo: feather glyph + wordmark -->
+  <defs>
+    <linearGradient id="featherGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF47A"/>
+      <stop offset="100%" stop-color="#E8D44D"/>
+    </linearGradient>
+  </defs>
+  <!-- Feather mark: three curved vanes from a spine -->
+  <g fill="none" stroke="url(#featherGradient)" stroke-width="7" stroke-linecap="round">
+    <path d="M 12 84 C 12 44, 40 20, 84 12"/>
+    <path d="M 12 84 C 30 62, 52 48, 84 40"/>
+  </g>
+  <!-- Vane barbs -->
+  <g stroke="#FEF47A" stroke-width="5" stroke-linecap="round">
+    <path d="M 40 33 C 54 40, 66 44, 78 46" opacity="0.9"/>
+    <path d="M 48 52 C 62 58, 74 61, 86 62" opacity="0.75"/>
+    <path d="M 58 70 C 70 75, 80 77, 90 78" opacity="0.6"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="112" y="66" font-family="'Inter','Geist',system-ui,sans-serif" font-size="34" font-weight="700" fill="#FAFAFA" letter-spacing="0.5">featherless</text>
+</svg>
